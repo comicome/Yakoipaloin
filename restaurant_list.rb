@@ -37,7 +37,7 @@ def parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
         end
     end
     if nombreRestaurants % 30 == 0
-        parse_restaurants(nombreRestaurants, restaurants_list)
+        parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
     end
     return restaurants_list
 end

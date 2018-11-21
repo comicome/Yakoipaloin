@@ -97,7 +97,7 @@ def get_restaurant_details(url)
 end
 
 def hash_to_json_file (restaurants_list)
-    File.open("data/tripAdvisor.json","w") do |f|
+    File.open("data/listRestaurants.json","w") do |f|
         f.write(restaurants_list.to_json)
     end
 end
@@ -110,7 +110,7 @@ def hash_to_csv_file (restaurants_list)
             csv << x.values
         end
     end
-    File.write('data/tripAdvisor.csv', s)
+    File.write('data/listRestaurants.csv', s)
 end
 
 puts "TripAdvisor is starting"

@@ -1,9 +1,10 @@
 require 'rubygems'
 require 'nokogiri' 
 require 'open-uri'
+require 'json/ext'
+
 
 doc = Nokogiri::HTML(open("https://www.tripadvisor.fr/RestaurantSearch?Action=AVAIL_CLEAR&geo=187147&ajax=1&zfp=10598%2C10601&zfn=7236772&itags=10591&sortOrder=relevance&availSearchEnabled=true&eaterydate=2018_11_20&date=2018-11-21&time=20%3A00%3A00&people=2"), nil, Encoding::UTF_8.to_s)
-
 
 restaurants_list = []
 
@@ -29,4 +30,9 @@ doc.css("div.listing div.ui_column").each do |restaurant|
         restaurants_list << restaurant
     end
 end
-puts restaurants_list
+puts restaurants_list.to_json
+
+File.open("data/tripAdvisor.json","w") do |f|
+    f.write(restaurants_list.to_json)
+  end
+

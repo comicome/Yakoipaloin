@@ -46,7 +46,7 @@ def parse_restaurants_deliveroo(restaurants_list)
     url = "https://deliveroo.fr/fr/restaurants/paris/10eme-gare-du-nord?geohash=u09wj98ze9hc"
     doc = Nokogiri::HTML(open(url), nil, Encoding::UTF_8.to_s)
 
-    doc.css("li.RestaurantsList-f37d5282571072cb").each_with_index do |restaurant, index|
+    doc.css("li.RestaurantsList-f37d5282571072cb").each do |restaurant|
         types_list = []
         source  = "Deliveroo"
 
@@ -71,7 +71,6 @@ def parse_restaurants_deliveroo(restaurants_list)
             "source" => source
         }
         restaurants_list << restaurant
-        break if index > 10
     end
 
     return restaurants_list 

@@ -66,7 +66,7 @@ def parse_restaurants_deliveroo(restaurants_list)
             "rating" => rating,
             "price" => restaurant.css('span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-dfaaa1af6c70149c span.TagList-7cda8f30b4344d40')[0].text,
             "type_list" => restaurant_details["types"],
-            'address' => restaurant_details["image"],
+            'address' => restaurant_details["address"],
             'link' => url_restaurant,
             "source" => source
         }

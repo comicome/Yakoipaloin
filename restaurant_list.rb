@@ -10,36 +10,43 @@ def parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
 
     doc.css("div.listing").each do |restaurant|
         types_list = []
-        source = "Tripadvisor"
         if restaurant.css('div.title a').text != ''
 
+            name = restaurant.css('div.title a').text.gsub("\n", '')
+            img = restaurant.css("img.photo_image")[0]["src"]
+            review_count = restaurant.css('span.reviewCount a').text.gsub("\n", '').gsub(" avis ", '').to_i
             rating = restaurant.css('div.rating span').to_s.match(/_(\d+)/)
-            url_restaurant = 'https://www.tripadvisor.fr' + restaurant.css('a.photo_link')[0]["href"]
+            rating = rating[1..-1].first.to_f/10
+            price = restaurant.css('span.item.price').tex
 
             restaurant.css('a.item.cuisine').each do |cuisine|
                 type = cuisine.text
                 types_list << type
             end
 
+            url_restaurant = 'https://www.tripadvisor.fr' + restaurant.css('a.photo_link')[0]["href"]
+
             restaurant = {
-                "name" => restaurant.css('div.title a').text.gsub("\n", ''),
-                "image" => restaurant.css("img.photo_image")[0]["src"],
-                "reviewCount" => restaurant.css('span.reviewCount a').text.gsub("\n", '').gsub(" avis ", '').to_i,
-                "rating" => rating[1..-1].first.to_f/10,
-                "price" => restaurant.css('span.item.price').text,
+                "name" => name,
+                "image" => img,
+                "reviewCount" => review_count,
+                "rating" => rating,
+                "price" => price,
                 "type_list" => types_list,
-                'address' => get_address(url_restaurant),
+                'address' => get_address_trip_advisor(url_restaurant),
                 'link' => url_restaurant,
-                "source" => source
+                "source" => "TripAdvisor"
             }
             restaurants_list << restaurant
             nombreRestaurants += 1
         end
     end
+
     if nombreRestaurants % 30 == 0
         parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
     end
-    return restaurants_list
+
+    restaurants_list
 end
 
 def parse_restaurants_deliveroo(restaurants_list)
@@ -48,41 +55,42 @@ def parse_restaurants_deliveroo(restaurants_list)
 
     doc.css("li.RestaurantsList-f37d5282571072cb").each do |restaurant|
         types_list = []
-        source  = "Deliveroo"
+
+        name = restaurant.css('p.ccl-19882374e640f487.ccl-417df52a76832172.ccl-a5fb02a1085896d3.ccl-dd90031787517421.ccl-c9da0519c26dc749').text
 
         rating = restaurant.css('span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-a6fe14df36a14ee6').text.to_f
         rating = rating/20
 
         url_restaurant = restaurant.css('div.RestaurantCard-4ed7f323d018d7ae a')[0]["href"]
-        restaurant_details = get_restaurant_details(url_restaurant)
+        restaurant_details = get_restaurant_details_deliveroo(url_restaurant)
 
-        avis = restaurant.css('div[class^="Rating-"] span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-dfaaa1af6c70149c').text
-        avis = avis.gsub("(","").gsub("+)","").to_i
+        nb_feedback = restaurant.css('div[class^="Rating-"] span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-dfaaa1af6c70149c').text
+        nb_feedback = nb_feedback.gsub("(","").gsub("+)","").to_i
+
+        price = restaurant.css('span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-dfaaa1af6c70149c span.TagList-7cda8f30b4344d40')[0].text
 
         restaurant = {
-            "name" => restaurant.css('p.ccl-19882374e640f487.ccl-417df52a76832172.ccl-a5fb02a1085896d3.ccl-dd90031787517421.ccl-c9da0519c26dc749').text,
+            "name" => name,
             "image" => restaurant_details["image"],
-            "reviewCount" => avis,
+            "reviewCount" => nb_feedback,
             "rating" => rating,
-            "price" => restaurant.css('span.ccl-19882374e640f487.ccl-417df52a76832172.ccl-dfaaa1af6c70149c span.TagList-7cda8f30b4344d40')[0].text,
+            "price" => price,
             "type_list" => restaurant_details["types"],
             'address' => restaurant_details["address"],
             'link' => url_restaurant,
-            "source" => source
+            "source" => "Deliveroo"
         }
         restaurants_list << restaurant
     end
-
-    return restaurants_list 
+    restaurants_list 
 end
 
-def get_address(url)
+def get_address_trip_advisor(url)
     doc = Nokogiri::HTML(open(url), nil, Encoding::UTF_8.to_s)
-    address = doc.css('div.blEntry.address').text
-    return address
+    doc.css('div.blEntry.address').text
 end
 
-def get_restaurant_details(url)
+def get_restaurant_details_deliveroo(url)
     types_list = []
     doc = Nokogiri::HTML(open(url), nil, Encoding::UTF_8.to_s)
     address = doc.css('small.address').text
@@ -104,10 +112,10 @@ end
 
 def hash_to_csv_file (restaurants_list)
     column_names = restaurants_list.first.keys
-    s=CSV.generate do |csv|
+    s = CSV.generate do |csv|
         csv << column_names
-        restaurants_list.each do |x|
-            csv << x.values
+        restaurants_list.each do |restaurant|
+            csv << restaurant.values
         end
     end
     File.write('data/listRestaurants.csv', s)

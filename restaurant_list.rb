@@ -14,10 +14,10 @@ def parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
 
             name = restaurant.css('div.title a').text.gsub("\n", '')
             img = restaurant.css("img.photo_image")[0]["src"]
-            review_count = restaurant.css('span.reviewCount a').text.gsub("\n", '').gsub(" avis ", '').to_i
+            nb_feedback= restaurant.css('span.reviewCount a').text.gsub("\n", '').gsub(" avis ", '').to_i
             rating = restaurant.css('div.rating span').to_s.match(/_(\d+)/)
             rating = rating[1..-1].first.to_f/10
-            price = restaurant.css('span.item.price').tex
+            price = restaurant.css('span.item.price').text
 
             restaurant.css('a.item.cuisine').each do |cuisine|
                 type = cuisine.text
@@ -28,8 +28,8 @@ def parse_restaurants_trip_advisor(nombreRestaurants, restaurants_list)
 
             restaurant = {
                 "name" => name,
-                "image" => img,
-                "reviewCount" => review_count,
+                "image_url" => img,
+                "review_count" => nb_feedback,
                 "rating" => rating,
                 "price" => price,
                 "type_list" => types_list,
@@ -71,8 +71,8 @@ def parse_restaurants_deliveroo(restaurants_list)
 
         restaurant = {
             "name" => name,
-            "image" => restaurant_details["image"],
-            "reviewCount" => nb_feedback,
+            "image_url" => restaurant_details["image"],
+            "review_count" => nb_feedback,
             "rating" => rating,
             "price" => price,
             "type_list" => restaurant_details["types"],
